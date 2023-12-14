@@ -1,76 +1,38 @@
 from globals import *
 
-# main function for postprocessing 
-def reassemble(aminoAcidOccurences):
-    if len(aminoAcidOccurences[1].keys()) == 8:
-        graph = graphStructure(aminoAcidOccurences)
-        solution = solve(graph)
-    else:
-        solution = "error: not enough amino acid pairs"
-    return solution
+import alg
 
-
-# returns a graph based on the pairs of amino acids, if there are more than two "ends", it will try to connect them based on larger subpeptides
-def graphStructure(aminoAcidOccurences):
-    graph = {}
-    for pair in aminoAcidOccurences[2].keys():
-        connect(pair[0], pair[1], graph)
-
-    ends = []
-    for connections in graph.keys():
-        if len(graph[connections]) == 1:
-            ends += [connections]
-
-    # if there are only two ends, we can return the graph
-    if len(ends) == 2:
-        return graph
+# main function for processing 
+def reassemble(subPeptideMasses, presentMasses_arr, presentMasses_hash):
+    possibleCombinationsl = alg.find_combinations(subPeptideMasses[0], presentMasses_arr)
+    if len(possibleCombinationsl) == 0:
+        print("No possible combinations")
+        return
     
-    # if there are more than two ends, we need to try connect them based on larger subpeptides
-    subPeptideLength = 3
-    while subPeptideLength < PEPTIDELENGTH and len(ends) > 2:
-        for subpeptide in aminoAcidOccurences[subPeptideLength].keys():
-            toConnect = []
-            for end in ends:
-                if end in subpeptide:
-                    toConnect += [end]
-            if len(toConnect) == 2:
-                connect(toConnect[0], toConnect[1], graph)
+    if len(possibleCombinationsl) > 1:
+        print("Not implemented yet")
+        return
     
-    if len(ends) == 2:
-        return "error: not enough amino acid pairs"
-        
-    return graph
+    presentMasses_hash[possibleCombinationsl[0][0]] -= 1
+    presentMasses_hash[possibleCombinationsl[0][1]] -= 1
 
-# connects two nodes in a graph
-def connect(a, b, graph):
-    if a not in graph:
-        graph[a] = {b}
-    else:
-        graph[a].add(b)
-    
-    if b not in graph:
-        graph[b] = {a}
-    else:
-        graph[b].add(a)
+    l_mass = sum(possibleCombinationsl[0])
+    l_arr = list(possibleCombinationsl[0])
+    r_mass = 0
+    r_arr = []
 
-# returns the one directional traversal of the graph: the reassenbled peptide
-def solve(graph):
-    # find the first node with only one connection
-    for each in graph.keys():
-        if len(graph[each]) == 1:
-            solution = [each]
-            break
-    
-    # find each next node based on the previous node
-    i = 0
-    while i < PEPTIDELENGTH-1:
-        possibleNext = list(graph[solution[i]])
-        
-        if possibleNext[0] == solution[i-1]:
-            next = possibleNext[1]
+
+    for i in range(1, len(subPeptideMasses)):
+        current = round(subPeptideMasses[i] - l_mass, 5)
+        if current in presentMasses_hash and presentMasses_hash[current] > 0:
+            presentMasses_hash[current] -= 1
+            l_arr += [current]
+            l_mass = subPeptideMasses[i]
         else:
-            next = possibleNext[0]
-        solution += [next]
-        i += 1
-    
-    return solution
+            r_arr += [subPeptideMasses[i] - r_mass]
+            r_mass = subPeptideMasses[i]
+
+    if l_arr[::-1] != r_arr[::-1]:
+        l_arr[0], l_arr[1] = l_arr[1], l_arr[0]
+
+    return l_arr

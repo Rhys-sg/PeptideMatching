@@ -1,36 +1,29 @@
 from globals import *
 import preCalculations
 import convertArray
-import occurences
 import solve
 
 
 def main():
+    counter = 0
     for i in range(NUMBEROFPEPTIDES):
-        # generate a random peptide, subpeptides, and subpeptide masses
         peptide = preCalculations.generatePeptide()
+        presentMasses_hash = preCalculations.calculatepresentMasses_hash(peptide)
+        presentMasses_arr = preCalculations.calculatepresentMasses_arr(peptide)
         subPeptides = preCalculations.generateSubPeptides(peptide)
         subPeptideMasses = sorted(preCalculations.generateSubPeptideMasses(subPeptides))
 
-        # generate a dictionary of how many times subpeptides occur
-        aminoAcidOccurences = occurences.generateAminoAcidOccurences(subPeptideMasses)
+        reassembledPeptide = solve.reassemble(subPeptideMasses, presentMasses_arr, presentMasses_hash)
+        if(reassembledPeptide):
+            if (peptide != convertArray.toNames(reassembledPeptide) and peptide != convertArray.toNames(reassembledPeptide[::-1])):
+                print(peptide)
+                print(convertArray.toNames(reassembledPeptide))
+                print(convertArray.toNames(reassembledPeptide)[::-1])
+                counter += 1
+                print()
+    print(counter)
+        
 
-        print([convertArray.toNames(x) for x in list(aminoAcidOccurences[2].keys())])
 
-        # reassemble the peptide
-        solution = solve.reassemble(aminoAcidOccurences)
-
-        # check if the solution is correct
-        if type(solution) == str:
-            print(solution)
-            continue
-        else:
-            solution_names = convertArray.toNames(solution)
-            print(peptide)
-            print(solution_names)
-            if peptide == solution_names or peptide == solution_names[::-1]:
-                print(True)
-            else:
-                print(False)
-
+        
 main()

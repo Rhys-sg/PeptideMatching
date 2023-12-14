@@ -1,6 +1,5 @@
 PEPTIDELENGTH = 8
 NUMBEROFPEPTIDES = 1000
-NUMBEROFSUBPEPTIDES = 500 # if run with 200, there is around a 1/5000 chance that an  amino acid will not be present as either an individual and paired with another amino acid
 
 tracker = {}
 
