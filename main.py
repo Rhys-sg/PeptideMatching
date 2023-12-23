@@ -7,23 +7,19 @@ import solve
 def main():
     counter = 0
     for i in range(NUMBEROFPEPTIDES):
-        peptide = preCalculations.generatePeptide()
-        presentMasses_hash = preCalculations.calculatepresentMasses_hash(peptide)
-        presentMasses_arr = preCalculations.calculatepresentMasses_arr(peptide)
-        subPeptides = preCalculations.generateSubPeptides(peptide)
-        subPeptideMasses = sorted(preCalculations.generateSubPeptideMasses(subPeptides))
+        peptide_names, peptide_masses, amino_acid_mass_frequency, present_amino_acid_masses = preCalculations.generatePeptide()
 
-        reassembledPeptide = solve.reassemble(subPeptideMasses, presentMasses_arr, presentMasses_hash)
-        if(reassembledPeptide):
-            if (peptide != convertArray.toNames(reassembledPeptide) and peptide != convertArray.toNames(reassembledPeptide[::-1])):
-                print(peptide)
+        subPeptideMasses = preCalculations.generateSubPeptides(peptide_masses)
+
+        reassembledPeptide, r_arr = solve.reassemble(subPeptideMasses, present_amino_acid_masses, amino_acid_mass_frequency)
+
+        if(reassembledPeptide != 0):
+            if (peptide_names != convertArray.toNames(reassembledPeptide) and peptide_names != convertArray.toNames(reassembledPeptide[::-1])):
+                print(peptide_names)
                 print(convertArray.toNames(reassembledPeptide))
-                print(convertArray.toNames(reassembledPeptide)[::-1])
+                print(convertArray.toNames(r_arr))
                 counter += 1
                 print()
     print(counter)
-        
-
-
-        
+    
 main()

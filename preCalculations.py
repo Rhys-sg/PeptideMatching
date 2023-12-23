@@ -1,59 +1,48 @@
 from globals import *
+import convertArray
 import random
 
 def generatePeptide():
-    peptide = []
-    aminoAcidCount = {}
+    peptide_masses = []
+    amino_acid_mass_frequency = {}
+
     for i in range(PEPTIDELENGTH):
-        toAdd = random.choice(list(AMINOACID_NAMES.values()))
-        if toAdd not in aminoAcidCount:
-            aminoAcidCount[toAdd] = 1
+        toAdd = random.choice(list(AMINOACID_MASS.values()))
+        if toAdd not in amino_acid_mass_frequency:
+            amino_acid_mass_frequency[toAdd] = 1
         else:
-            aminoAcidCount[toAdd] += 1
-        peptide += [toAdd]
+            amino_acid_mass_frequency[toAdd] += 1
+        peptide_masses += [toAdd]
 
-    return peptide
-
-
-def calculatepresentMasses_hash(peptide):
-    presentMasses_hash = {}
-    for aminoAcid in peptide:
-        if AMINOACID_MASS[aminoAcid] not in presentMasses_hash:
-            presentMasses_hash[AMINOACID_MASS[aminoAcid]] = 1
-        else:
-            presentMasses_hash[AMINOACID_MASS[aminoAcid]] += 1
-    return presentMasses_hash
-
-
-def calculatepresentMasses_arr(peptide):
-    presentMasses_arr = []
-    for aminoAcid in peptide:
-        presentMasses_arr += [AMINOACID_MASS[aminoAcid]]
-    return sorted(presentMasses_arr)
+    peptide_names = convertArray.toNames(peptide_masses)
+    present_amino_acid_masses = sorted(peptide_masses)
+    return peptide_names, peptide_masses, amino_acid_mass_frequency, present_amino_acid_masses
 
 
 def generateSubPeptides(peptide):
-    subPeptides = []
-
-    # calculates subpeptides from left side for length 2 to length n
-    for i in range(2, PEPTIDELENGTH+1):
-        subPeptides += [peptide[:i]]
+    n = len(peptide)
     
-    # calculates subpeptides from right side for length 2 to length n-1
-    for i in range(1, PEPTIDELENGTH-1):
-        subPeptides += [peptide[i:]]
+    left_sums = [round(sum(peptide[:i+1]), 5) for i in range(1, n)]
+    right_sums = [round(sum(peptide[i:]), 5) for i in range(1, n-1)][::-1]
 
-    return subPeptides
+    combined_sums = merge_sorted_lists(left_sums, right_sums)
+
+    return combined_sums
 
 
-def generateSubPeptideMasses(subPeptides):
-        subPeptideMasses = []
-        for segment in subPeptides:
-            mass = 0
-            for aminoAcid in segment:
-                mass += AMINOACID_MASS[aminoAcid]
-            mass = round(mass, 5)
-            subPeptideMasses += [mass]
-            tracker[mass] = segment # for debugging purposes
-        
-        return subPeptideMasses
+def merge_sorted_lists(left, right):
+    result = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] < right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    
+    return result
