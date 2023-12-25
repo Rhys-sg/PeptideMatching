@@ -1,59 +1,40 @@
 from globals import *
+from itertools import permutations
+from collections import Counter
 
-import alg
+import preCalculations
 
 # main function for processing 
-def reassemble(subPeptideMasses, presentMasses_arr, presentMasses_hash_l):
-    presentMasses_hash_r = presentMasses_hash_l.copy()
-    possibleCombinations_l = alg.find_combinations(subPeptideMasses[0], presentMasses_arr)
-
-
-    if len(possibleCombinations_l) > 1:
-        print("Not implemented yet")
-        return 0,0
+def reassemble(subpeptide_masses, present_masses):
+    all_permutations = list(permutations(present_masses))
+    all_permutations_masses = [preCalculations.generate_subpeptide_masses(permutation) for permutation in all_permutations]
     
-    presentMasses_hash_l[possibleCombinations_l[0][0]] -= 1
-    presentMasses_hash_l[possibleCombinations_l[0][1]] -= 1
-
-    l_mass = subPeptideMasses[0]
-    l_arr = list(possibleCombinations_l[0])
-    r_mass = 0
-    r_arr = []
-
-
-    for i in range(1, len(subPeptideMasses)):
-        current = round(subPeptideMasses[i] - l_mass, 5)
-        if current in presentMasses_hash_l and presentMasses_hash_l[current] > 0:
-            presentMasses_hash_l[current] -= 1
-            l_arr += [current]
-            l_mass = subPeptideMasses[i]
-            continue
-
-        if r_mass == 0:
-            possibleCombinations_r = alg.find_combinations(subPeptideMasses[i], presentMasses_arr)
-            if len(possibleCombinations_r) > 1:
-                print("Not implemented yet")
-                return 0,0
-
-            r_arr = list(possibleCombinations_r[0])
-            r_mass = subPeptideMasses[i]
-            presentMasses_hash_r[r_arr[0]] -= 1
-            presentMasses_hash_r[r_arr[1]] -= 1
-            r_subPeptideMasses = subPeptideMasses[:i][::-1]
-        else:
-            r_subPeptideMasses += [subPeptideMasses[i]]
+    if len(subpeptide_masses) == (len(present_masses)-1)*2:
+        for i in range(len(all_permutations_masses)):
+            if list(all_permutations_masses[i]) == subpeptide_masses:
+                return [[list(all_permutations[i]), []]]
             
+        print("No match found")
+        return None
+    
+    possible_solutions = []
+    for i in range(len(all_permutations_masses)):
+        results, missing = is_copy_with_missing_values(all_permutations_masses[i], subpeptide_masses)
+        if results:
+            possible_solutions.append([list(all_permutations[i]), missing])
+    return possible_solutions
 
-    for each in r_subPeptideMasses + [subPeptideMasses[-1]]:
-        current = round(each - r_mass, 5)
-        if current in presentMasses_hash_r:
-            presentMasses_hash_r[current] -= 1
-            if presentMasses_hash_r[current] == 0:
-                del presentMasses_hash_r[current]
-            r_arr += [current]
-            r_mass = each
 
-    if len(l_arr) == len(r_arr):
-        l_arr[:2] = r_arr[-2:][::-1]
 
-    return l_arr, r_arr
+def is_copy_with_missing_values(list_a, list_b):
+    missing = []
+    a, b = 0, 0
+    while a < len(list_a) and b < len(list_b):
+        if list_a[a] == list_b[b]:
+            a += 1
+            b += 1
+        else:
+            missing.append(list_a[a])
+            a += 1
+    
+    return b == len(list_b) and a <= len(list_a), missing

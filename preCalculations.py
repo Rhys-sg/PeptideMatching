@@ -4,22 +4,23 @@ import random
 
 def generatePeptide():
     peptide_masses = []
-    amino_acid_mass_frequency = {}
+    mass_frequency = {}
 
     for i in range(PEPTIDELENGTH):
         toAdd = random.choice(list(AMINOACID_MASS.values()))
-        if toAdd not in amino_acid_mass_frequency:
-            amino_acid_mass_frequency[toAdd] = 1
+        if toAdd not in mass_frequency:
+            mass_frequency[toAdd] = 1
         else:
-            amino_acid_mass_frequency[toAdd] += 1
+            mass_frequency[toAdd] += 1
         peptide_masses += [toAdd]
 
     peptide_names = convertArray.toNames(peptide_masses)
-    present_amino_acid_masses = sorted(peptide_masses)
-    return peptide_names, peptide_masses, amino_acid_mass_frequency, present_amino_acid_masses
+    present_masses = sorted(peptide_masses)
+    return peptide_names, peptide_masses, mass_frequency, present_masses
 
-
-def generateSubPeptides(peptide):
+# Generate a list of all subpeptide masses for a given peptide
+#   considers subpeptides that start from both ends of the peptide
+def generate_subpeptide_masses(peptide):
     n = len(peptide)
     
     left_sums = [round(sum(peptide[:i+1]), 5) for i in range(1, n)]
@@ -29,7 +30,7 @@ def generateSubPeptides(peptide):
 
     return combined_sums
 
-
+# Merge two sorted lists
 def merge_sorted_lists(left, right):
     result = []
     i = j = 0
@@ -46,3 +47,12 @@ def merge_sorted_lists(left, right):
     result.extend(right[j:])
     
     return result
+
+# Generate a random number of elements to remove (between 1 and half the length of the list)
+#   Remove the selected elements from the list without replacement
+def remove_random_elements(my_list):
+    num_elements_to_remove = random.randint(1, len(my_list)//2)
+    elements_to_remove = random.sample(my_list, num_elements_to_remove)
+    my_list = [element for element in my_list if element not in elements_to_remove]
+
+    return my_list, elements_to_remove
