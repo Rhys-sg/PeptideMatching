@@ -1,38 +1,36 @@
-from globals import *
-import preCalculations
+import pandas as pd
+import numpy as np
+
 import convertArray
 import solve
 
+def write_to_excel(data, file_path):
 
-def main():
-    counter = 0
-    for i in range(NUMBEROFPEPTIDES):
-        print("Peptide ", i+1, " / ", NUMBEROFPEPTIDES)
-        peptide_names, peptide_masses, mass_frequency, present_masses = preCalculations.generatePeptide()
+    df = pd.DataFrame({'Column': data})
+    df.to_excel(file_path, index=False)
 
-        subpeptide_masses = preCalculations.generate_subpeptide_masses(peptide_masses)
-        possible_reassembled_peptide_full = solve.reassemble(subpeptide_masses, present_masses)
-        reassembled_peptide_full = possible_reassembled_peptide_full[0][0]
+def read_from_excel(file_path="Test.xlsx"):
+    try:
+        df = pd.read_excel(file_path)
+        return list(df['Column'])
+
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return None
+
+if __name__ == "__main__":
+    present_masses = [71.03711, 71.03711, 103.00919, 128.05858, 129.04259, 131.04049, 147.06841, 163.06333]
+    example_data = [174.0463, 275.12699, 337.10963, 404.16958, 468.15012, 475.20669, 539.18723, 606.24718, 668.22982, 769.31051, 796.2884, 840.34762, 943.35681]
 
 
-        subpeptides_missing_masses, removed = preCalculations.remove_random_elements(subpeptide_masses)
-        reassembled_peptide_missing = solve.reassemble(subpeptides_missing_masses, present_masses)
+    write_to_excel(example_data, "C:/Users/rsore/Documents/GitHub/PeptideMatching/Test.xlsx")
+    subpeptide_masses = read_from_excel("C:/Users/rsore/Documents/GitHub/PeptideMatching/Test.xlsx")
 
-        
-        print("Peptide: ", peptide_names)
-        print("Reassembled Peptide: ", convertArray.toNames(reassembled_peptide_full))
-        print("Passed: ", (peptide_names == convertArray.toNames(reassembled_peptide_full) or peptide_names == convertArray.toNames(reassembled_peptide_full[::-1])))
-        print("Removed ", len(removed), " : ", removed)
-        print("Possible Reassembled Peptides")
-        passed = False
-        for each in reassembled_peptide_missing:
-            print(convertArray.toNames(each[0]), " with missing ", each[1])
-            if peptide_names == convertArray.toNames(each[0]) or peptide_names == convertArray.toNames(each[0][::-1]):
-                passed = True
-        print("Passed: ", passed)
-        print()
-        if passed:
-            counter += 1
-    print("total passed ", counter, " / ", NUMBEROFPEPTIDES)
     
-main()
+    possible_reassembled_peptide = solve.reassemble(subpeptide_masses, present_masses)
+    
+    print(f"{len(possible_reassembled_peptide)} Possible Peptide:")
+    for each in possible_reassembled_peptide:
+        print(convertArray.toNames(each[0]), " missing: ", each[1])
+
+    

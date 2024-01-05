@@ -2,6 +2,7 @@ from globals import *
 import convertArray
 import random
 
+# Generate a random peptide of length PEPTIDELENGTH
 def generatePeptide():
     peptide_masses = []
     mass_frequency = {}
