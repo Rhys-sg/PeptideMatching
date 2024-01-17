@@ -2,9 +2,11 @@ from globals import *
 import preCalculations
 import convertArray
 import solve
+import time
 
 
 def main():
+    start = time.time()
     counter = 0
     for i in range(NUMBEROFPEPTIDES):
         print("Peptide ", i+1, " / ", NUMBEROFPEPTIDES)
@@ -35,4 +37,7 @@ def main():
             counter += 1
     print("total passed ", counter, " / ", NUMBEROFPEPTIDES)
     
+    end = time.time()
+    print("Time Elapsed: ", end - start)
+
 main()
